@@ -1,0 +1,98 @@
+Código en lenguaje C (alto nivel)
+#include <stdio.h> 
+// Función que verifica si un número es primo
+void verificar_primo(int a) {
+    int d = 3;  // Inicializar divisor d en 3
+
+    // Si el número es par y mayor que 2, no es primo
+    if (a % 2 == 0) {  
+        printf("a no es primo\n");  // Imprime mensaje
+        return;  // Termina la función
+    }
+
+    // Bucle para probar divisores impares desde 3 hasta a-1
+    while (d < a) {
+        if (a % d == 0) {  // Si es divisible por d
+            printf("a no es primo\n");  // Imprime mensaje
+            return;  // Termina la función
+        }
+        d += 2;  // Incrementa d en 2 (solo impares)
+    }
+
+    // Si d llega a ser mayor o igual a a, entonces es primo
+    if (d >= a) {
+        printf("a es primo\n");  // Imprime mensaje
+    }
+}
+
+// Función principal
+int main() {
+    int a;  // Variable para almacenar el número ingresado
+    printf("Ingrese un número: ");  // Solicita entrada
+    scanf("%d", &a);  // Lee el número desde el teclado
+    verificar_primo(a);  // Llama a la función de verificación
+    return 0;  // Finaliza el programa
+}
+
+
+
+
+LENGUAJE EN ENSAMBLADOR X86_64 
+section .bss
+    a resd 1          ; Reservar espacio para almacenar el número ingresado
+
+section .text
+    global _start     ; Punto de entrada del programa
+    %include "io.asm" ; Incluir la biblioteca de entrada/salida
+
+section .data
+    msg_no_primo db "a no es primo", 0  ; Mensaje cuando el número no es primo
+    msg_primo db "a es primo", 0        ; Mensaje cuando el número es primo
+    msg_ingrese db "Ingrese un numero: ", 0  ; Mensaje de solicitud
+
+_start:
+    mov esi, msg_ingrese ; Cargar dirección del mensaje "Ingrese un número"
+    call print_str       ; Imprimir mensaje
+    call print_newline   ; Imprimir nueva línea
+
+    call scan_num        ; Leer número desde teclado
+    mov [a], eax        ; Guardar el número ingresado en 'a'
+
+    mov edx, 0          ; Limpiar registro de residuo
+    mov eax, [a]        ; Cargar número en EAX
+    mov ecx, 2          ; Cargar divisor 2
+    div ecx             ; EAX / 2, residuo en EDX
+    cmp edx, 0          ; Comparar residuo con 0
+    je no_primo         ; Si es par, saltar a 'no_primo'
+
+    mov ebx, 3          ; Inicializar d = 3
+
+loop_prueba:
+    mov eax, ebx        ; Cargar d en EAX
+    cmp eax, [a]        ; Comparar d con a
+    jge es_primo        ; Si d >= a, saltar a 'es_primo'
+
+    mov edx, 0          ; Limpiar el registro de residuo
+    mov eax, [a]        ; Cargar el número en EAX
+    div ebx             ; EAX / d, cociente en EAX, residuo en EDX
+    cmp edx, 0          ; Si el residuo es 0, a es divisible por d
+    je no_primo         ; Saltar a 'no_primo' si encuentra un divisor
+
+    add ebx, 2          ; d = d + 2
+    jmp loop_prueba     ; Repetir ciclo
+
+no_primo:
+    mov esi, msg_no_primo  ; Cargar dirección del mensaje "a no es primo"
+    call print_str         ; Imprimir el mensaje
+    call print_newline     ; Imprimir nueva línea
+    jmp fin_programa        ; Terminar programa
+
+es_primo:
+    mov esi, msg_primo  ; Cargar dirección del mensaje "a es primo"
+    call print_str      ; Imprimir el mensaje
+    call print_newline  ; Imprimir nueva línea
+
+fin_programa:
+    mov eax, 60  ; Llamada al sistema exit
+    xor edi, edi ; Código de salida 0
+    syscall      ; Terminar el programa
